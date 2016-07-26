@@ -2010,7 +2010,7 @@ void ApplicationManagerImpl::CreateApplications(SmartArray &obj_array,
             : GenerateNewHMIAppID();
 
     const std::string app_icon_dir(Profile::instance()->app_icons_folder());
-    const std::string full_icon_path(app_icon_dir + "/" + mobile_app_id);
+    const std::string full_icon_path(Profile::instance()->hmi_access_location() + "/" + mobile_app_id);
 
     uint32_t device_id = 0;
     connection_handler::ConnectionHandlerImpl *con_handler_impl =
