@@ -85,8 +85,7 @@ void SetIconRequest::Run() {
       smart_objects::SmartType_Map);
 
 // Panasonic requres unchanged path value without encoded special characters
-  const std::string full_file_path_for_hmi = file_system::ConvertPathForURL(
-      full_file_path);
+  const std::string full_file_path_for_hmi = profile::Profile::instance()->hmi_access_location() + "/" + app->folder_name() + "/" + sync_file_name;
 
   msg_params[strings::sync_file_name][strings::value] = full_file_path_for_hmi;
 

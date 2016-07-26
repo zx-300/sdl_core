@@ -351,6 +351,10 @@ const std::string& Profile::app_storage_folder() const {
   return app_storage_folder_;
 }
 
+const std::string& Profile::hmi_access_location() const {
+  return hmi_access_location_;
+}
+
 const std::string& Profile::app_resourse_folder() const {
   return app_resourse_folder_;
 }
@@ -735,10 +739,17 @@ void Profile::UpdateValues() {
   ReadStringValue(&app_storage_folder_,
                   file_system::CurrentWorkingDirectory().c_str(),
                   kMainSection, kAppStorageFolderKey);
+  
+  ReadStringValue(&hmi_access_location_,
+                  file_system::CurrentWorkingDirectory().c_str(),
+                  kMainSection, kAppStorageFolderKey);
 
   if (IsRelativePath(app_storage_folder_)) {
     MakeAbsolutePath(app_storage_folder_);
+    MakeAbsolutePath(hmi_access_location_);
   }
+
+  PrependStorageLocation(hmi_access_location_);
 
   LOG_UPDATED_VALUE(app_storage_folder_, kAppStorageFolderKey, kMainSection);
 
@@ -1611,6 +1622,10 @@ bool Profile::IsRelativePath(const std::string& path) {
 
 void Profile::MakeAbsolutePath(std::string& path) {
   path = file_system::CurrentWorkingDirectory() + "/" + path;
+}
+
+void Profile::PrependStorageLocation(std::string& path) {
+  path = "http://localhost:3001" + path;
 }
 
 }//  namespace profile

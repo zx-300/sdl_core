@@ -182,7 +182,7 @@ void PutFileRequest::Run() {
           application->folder_name()));
   }
 
-  sync_file_name_ = file_path + "/" + sync_file_name_;
+  sync_file_name_ = profile::Profile::instance()->hmi_access_location() + application->folder_name() + "/" + sync_file_name_;
   switch (save_result) {
     case mobile_apis::Result::SUCCESS: {
 
@@ -241,6 +241,7 @@ void PutFileRequest::SendOnPutFileNotification() {
 
   message[strings::params][strings::message_type] = MessageType::kNotification;
   message[strings::msg_params][strings::app_id] = connection_key();
+  // TODO: might need to change this?
   message[strings::msg_params][strings::sync_file_name] = sync_file_name_;
   message[strings::msg_params][strings::offset] = offset_;
   if (0 == offset_) {

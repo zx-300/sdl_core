@@ -83,6 +83,8 @@ class Profile : public utils::Singleton<Profile> {
       */
     const std::string& app_storage_folder() const;
 
+    const std::string& hmi_access_location() const;
+
     /**
      * @brief Return application resourse folder
      */
@@ -614,6 +616,7 @@ class Profile : public utils::Singleton<Profile> {
      * @param path Path
      */
     void MakeAbsolutePath(std::string& path);
+    void PrependStorageLocation(std::string& path);
 
     /**
      * @brief Converts input string to number
@@ -631,6 +634,7 @@ private:
 #endif // WEB_HMI
     std::string                     app_config_folder_;
     std::string                     app_storage_folder_;
+    std::string                     hmi_access_location_;
     std::string                     app_resourse_folder_;
     bool                            enable_protocol_4_;
     std::string                     app_icons_folder_;
