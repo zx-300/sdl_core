@@ -228,7 +228,7 @@ bool RPCPassingHandler::RPCPassThrough(smart_objects::SmartObject rpc_message) {
       rpc_request_queue_lock_.Release();
       RemoveRequestTimer(correlation_id);
 
-      mobile_apis::Result::eType result_code;
+      mobile_apis::Result::eType result_code = mobile_apis::Result::INVALID_ID;
       smart_objects::EnumConversionHelper<mobile_apis::Result::eType>::
           StringToEnum(
               rpc_message[strings::msg_params][strings::result_code].asString(),

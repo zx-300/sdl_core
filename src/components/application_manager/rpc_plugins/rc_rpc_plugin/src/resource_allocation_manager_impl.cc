@@ -248,8 +248,11 @@ void ConstructOnRCStatusNotificationParams(
     return [&result_modules](const ModuleUid& module) {
       smart_objects::SmartObject module_data =
           SmartObject(smart_objects::SmartType_Map);
-      auto module_type =
-          StringToEnum<mobile_apis::ModuleType::eType>(module.first);
+      mobile_apis::ModuleType::eType module_type =
+          mobile_apis::ModuleType::INVALID_ENUM;
+      smart_objects::EnumConversionHelper<
+          mobile_apis::ModuleType::eType>::StringToEnum(module.first,
+                                                        &module_type);
       module_data[message_params::kModuleType] = module_type;
       module_data[message_params::kModuleId] = module.second;
       result_modules.asArray()->push_back(module_data);
