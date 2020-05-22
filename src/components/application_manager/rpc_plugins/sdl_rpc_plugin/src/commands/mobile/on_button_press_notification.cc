@@ -144,11 +144,17 @@ void OnButtonPressNotification::Run() {
     }
     // if "appID" is present, send it to named app only if its FULL or
     // LIMITED
-    if (app.use_count() != 0) {
-      if (app->app_id() == subscribed_app->app_id()) {
-        SendButtonPress(subscribed_app);
+    if (is_app_id_exists) {
+      app = application_manager_.application(
+        (*message_)[strings::msg_params][strings::app_id].asUInt());
+
+      if (app.use_count() != 0) {
+        if (app->app_id() == subscribed_app->app_id()) {
+          SendButtonPress(subscribed_app);
+        }
       }
     } else if (subscribed_app->IsFullscreen()) {
+      LOG4CXX_ERROR(logger_, "OnButtonPress without app_id.");
       // if No "appID" - send it FULL apps only.
       SendButtonPress(subscribed_app);
     }
