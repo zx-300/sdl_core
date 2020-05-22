@@ -173,7 +173,7 @@ class RPCHandlerImpl : public RPCHandler,
 
   void ProcessMessageFromMobile(const std::shared_ptr<Message> message);
   void ProcessMessageFromHMI(const std::shared_ptr<Message> message);
-
+  bool CheckHmiTypeForRAI(ns_smart_device_link::ns_smart_objects::SmartObject& output);
   bool ConvertMessageToSO(const Message& message,
                           smart_objects::SmartObject& output,
                           const bool allow_unknown_parameters = false,

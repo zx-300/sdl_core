@@ -317,6 +317,45 @@ void RPCHandlerImpl::GetMessageVersion(
   }
 }
 
+// check whether the RegisterAppInterface contains correct hmi type.
+bool RPCHandlerImpl::CheckHmiTypeForRAI(ns_smart_device_link::ns_smart_objects::SmartObject& output) {
+  LOG4CXX_AUTO_TRACE(logger_);
+  // if exists the key of app_hmi_type
+  if (output[strings::msg_params].keyExists(strings::app_hmi_type)) {
+    smart_objects::SmartArray* hmi_types_ptr =
+        output[strings::msg_params][strings::app_hmi_type].asArray();
+    if (NULL == hmi_types_ptr) {
+      LOG4CXX_WARN(logger_,
+            "RegisterAppInterface invalid");
+      return false;
+    }
+    // check array elements
+    for (unsigned int i = 0; i < hmi_types_ptr->size(); i++) {
+      LOG4CXX_DEBUG(logger_,
+            "RegisterAppInterface hmi_type:" << (*hmi_types_ptr)[i].asString());
+      const char* hmiType = (*hmi_types_ptr)[i].asString().c_str();
+      if (0 == strcmp(hmiType, "DEFAULT") ||
+         0 == strcmp(hmiType, "REMOTE_CONTROL") ||
+         0 == strcmp(hmiType, "SYSTEM") ||
+         0 == strcmp(hmiType, "TESTING") ||
+         0 == strcmp(hmiType, "BACKGROUND_PROCESS") ||
+         0 == strcmp(hmiType, "PROJECTION") ||
+         0 == strcmp(hmiType, "SOCIAL") ||
+         0 == strcmp(hmiType, "INFORMATION") ||
+         0 == strcmp(hmiType, "NAVIGATION") ||
+         0 == strcmp(hmiType, "MESSAGING") ||
+         0 == strcmp(hmiType, "MEDIA")) {
+        LOG4CXX_DEBUG(logger_,
+            "RegisterAppInterface valid");
+        return true;
+      }
+    }
+  }
+  LOG4CXX_WARN(logger_,
+            "RegisterAppInterface invalid");
+  return false;
+}
+
 bool RPCHandlerImpl::ConvertMessageToSO(
     const Message& message,
     ns_smart_device_link::ns_smart_objects::SmartObject& output,
@@ -342,6 +381,7 @@ bool RPCHandlerImpl::ConvertMessageToSO(
               message.correlation_id());
 
       rpc::ValidationReport report("RPC");
+      bool isRAIParaInvalid = false;
 
       // Attach RPC version to SmartObject if it does not exist yet.
       auto app_ptr = app_manager_.application(message.connection_key());
@@ -352,6 +392,8 @@ bool RPCHandlerImpl::ConvertMessageToSO(
                  static_cast<mobile_apis::FunctionID::eType>(
                      output[strings::params][strings::function_id].asInt())) {
         GetMessageVersion(output, msg_version);
+        // only check RegisterAppInterfaceID
+        isRAIParaInvalid = CheckHmiTypeForRAI(output);
       }
 
       if (!conversion_result ||
@@ -363,19 +405,23 @@ bool RPCHandlerImpl::ConvertMessageToSO(
                          << msg_version.toString() << " : "
                          << message.json_message());
 
-        std::shared_ptr<smart_objects::SmartObject> response(
-            MessageHelper::CreateNegativeResponse(
-                message.connection_key(),
-                message.function_id(),
-                message.correlation_id(),
-                mobile_apis::Result::INVALID_DATA));
+        // if RPC is not RegisterAppInterfaceID;
+        // or RegisterAppInterfaceID check result is false
+        if (!isRAIParaInvalid) {
+          std::shared_ptr<smart_objects::SmartObject> response(
+              MessageHelper::CreateNegativeResponse(
+                  message.connection_key(),
+                  message.function_id(),
+                  message.correlation_id(),
+                  mobile_apis::Result::INVALID_DATA));
 
-        (*response)[strings::msg_params][strings::info] =
-            rpc::PrettyFormat(report);
-        app_manager_.GetRPCService().ManageMobileCommand(
-            response, commands::Command::SOURCE_SDL);
+          (*response)[strings::msg_params][strings::info] =
+              rpc::PrettyFormat(report);
+          app_manager_.GetRPCService().ManageMobileCommand(
+              response, commands::Command::SOURCE_SDL);
 
-        return false;
+          return false;
+        }
       }
 
       LOG4CXX_DEBUG(logger_,
